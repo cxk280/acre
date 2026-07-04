@@ -21,4 +21,27 @@ Acre *is* the fractional-GPU story, so it runs on the cheapest slices Vultr sell
 Provision tenants live during the demo and **tear them down afterward** — the elastic teardown is
 itself part of the story.
 
-See [`PLAN.md`](./PLAN.md) for the full concept and build plan.
+See [`PLAN.md`](./PLAN.md) for the full concept and build plan, and
+[`VIEWS.md`](./VIEWS.md) for the view spec the UI is built from.
+
+## Develop
+
+```bash
+npm install
+npm run dev        # http://localhost:3000  (redirects to /tenants)
+```
+
+Other scripts: `npm run build`, `npm start`, `npm run lint`, `npm run typecheck`,
+`npm test`.
+
+**Stack:** Next.js (App Router) · TypeScript · Tailwind v4 (design tokens ported
+from the approved Figma system) · Vitest.
+
+**Provisioning is simulated** by a `MockProvisioner` (a timed state machine)
+behind a `Provisioner` interface — the ~60s theater, the isolation badge, and the
+cost meter all run without touching real infrastructure. The real Vultr adapter
+(`lib/provisioner/vultr.ts`) is a stub, enabled with `ACRE_PROVISIONER=vultr` and
+a `VULTR_API_KEY` (env only — never committed).
+
+> Demo caveat: tenant state lives in an in-memory store (one process, resets on
+> restart) behind a `TenantRepository` interface, so Postgres is a drop-in later.

@@ -72,6 +72,7 @@ export default function ProvisioningPage() {
               onChange={(e) => setName(e.target.value)}
               placeholder="e.g. Harbor Free Clinic"
               aria-label="Tenant name"
+              maxLength={60}
             />
           </Field>
 
@@ -133,7 +134,11 @@ export default function ProvisioningPage() {
 
           {error && <p className="text-sm text-over">{error}</p>}
 
-          <Button type="submit" leftIcon="zap" disabled={submitting}>
+          <Button
+            type="submit"
+            leftIcon="zap"
+            disabled={submitting || !name.trim()}
+          >
             {submitting ? "Provisioning…" : "Provision dedicated endpoint"}
           </Button>
         </form>
