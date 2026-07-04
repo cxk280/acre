@@ -27,7 +27,12 @@ const ITEMS: NavItem[] = [
     icon: "zap",
     match: (p) => p === "/provisioning",
   },
-  { label: "Playground", href: "#", icon: "terminal", soon: true, match: () => false },
+  {
+    label: "Playground",
+    href: "/playground",
+    icon: "terminal",
+    match: (p) => p === "/playground",
+  },
   { label: "Admin", href: "#", icon: "sliders", soon: true, match: () => false },
 ];
 
