@@ -33,7 +33,12 @@ const ITEMS: NavItem[] = [
     icon: "terminal",
     match: (p) => p === "/playground",
   },
-  { label: "Admin", href: "#", icon: "sliders", soon: true, match: () => false },
+  {
+    label: "Admin",
+    href: "/admin",
+    icon: "sliders",
+    match: (p) => p === "/admin",
+  },
 ];
 
 export function Nav() {
