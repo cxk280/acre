@@ -1,8 +1,12 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
 import { cn } from "@/lib/cn";
 import type { Tenant } from "@/lib/domain/types";
 import { STATUS_META } from "@/lib/status-meta";
 import { buttonClass } from "./Button";
+import { TeardownDialog } from "./ConfirmDialog";
 import { CostMeterInline } from "./CostMeter";
 import { IsolationBadgeCompact } from "./IsolationBadge";
 import { StatusPill } from "./StatusPill";
@@ -16,6 +20,7 @@ export function TenantCard({
   onTearDown?: (id: string) => void;
   tearingDown?: boolean;
 }) {
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const canTearDown =
     tenant.status !== "stopped" && tenant.status !== "tearing_down";
 
@@ -46,7 +51,7 @@ export function TenantCard({
           {onTearDown && canTearDown && (
             <button
               type="button"
-              onClick={() => onTearDown(tenant.id)}
+              onClick={() => setConfirmOpen(true)}
               disabled={tearingDown}
               className={cn(buttonClass("danger"), "px-3 py-2")}
             >
@@ -61,6 +66,19 @@ export function TenantCard({
           </Link>
         </div>
       </div>
+
+      {onTearDown && (
+        <TeardownDialog
+          tenant={tenant}
+          open={confirmOpen}
+          busy={tearingDown}
+          onConfirm={() => {
+            setConfirmOpen(false);
+            onTearDown(tenant.id);
+          }}
+          onCancel={() => setConfirmOpen(false)}
+        />
+      )}
     </div>
   );
 }

@@ -34,6 +34,11 @@ export function everySliceUnderCeiling(): boolean {
   return SLICE_OPTIONS.every((s) => isUnderCeiling(s.ratePerHour));
 }
 
+/** Projected daily saving from tearing a tenant down (its $/hr × 24h). */
+export function dailySavings(ratePerHour: number): number {
+  return ratePerHour * 24;
+}
+
 /** Is a tenant currently accruing cost (billing started, not yet stopped)? */
 export function isBillingActive(tenant: Tenant): boolean {
   return tenant.billingStartedAt != null && tenant.billingStoppedAt == null;

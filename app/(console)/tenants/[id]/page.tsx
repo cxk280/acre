@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { buttonClass } from "@/components/Button";
+import { TeardownDialog } from "@/components/ConfirmDialog";
 import { CostMeterProminent } from "@/components/CostMeter";
 import { useNow, useTenant } from "@/components/hooks";
 import { Icon } from "@/components/icons";
@@ -48,6 +49,7 @@ export default function TenantDetailPage() {
 
 function TenantDetail({ tenant, now }: { tenant: Tenant; now: number }) {
   const [tearing, setTearing] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const canTearDown =
     tenant.status !== "stopped" && tenant.status !== "tearing_down";
   const uptimeMs =
@@ -56,6 +58,7 @@ function TenantDetail({ tenant, now }: { tenant: Tenant; now: number }) {
       : 0;
 
   async function handleTearDown() {
+    setConfirmOpen(false);
     setTearing(true);
     try {
       await teardownTenant(tenant.id);
@@ -87,7 +90,7 @@ function TenantDetail({ tenant, now }: { tenant: Tenant; now: number }) {
         {canTearDown && (
           <button
             type="button"
-            onClick={handleTearDown}
+            onClick={() => setConfirmOpen(true)}
             disabled={tearing}
             className={cn(buttonClass("danger"), "ml-auto")}
           >
@@ -95,6 +98,14 @@ function TenantDetail({ tenant, now }: { tenant: Tenant; now: number }) {
           </button>
         )}
       </div>
+
+      <TeardownDialog
+        tenant={tenant}
+        open={confirmOpen}
+        busy={tearing}
+        onConfirm={handleTearDown}
+        onCancel={() => setConfirmOpen(false)}
+      />
 
       <div className="flex flex-col gap-6 lg:flex-row">
         {/* Left: endpoint + activity */}
