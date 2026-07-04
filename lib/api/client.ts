@@ -50,6 +50,13 @@ export async function teardownTenant(id: string): Promise<Tenant> {
   return body.tenant;
 }
 
+export async function teardownAllTenants(): Promise<number> {
+  const res = await fetch("/api/tenants/teardown-all", { method: "POST" });
+  if (!res.ok) throw new Error(await readError(res));
+  const body = (await res.json()) as { tornDown: number };
+  return body.tornDown;
+}
+
 export async function runInference(
   id: string,
   prompt: string,
