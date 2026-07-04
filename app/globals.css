@@ -1,0 +1,233 @@
+@import "tailwindcss";
+
+/*
+  Acre design tokens — ported from the approved Figma design system
+  (file QytKHvc71VFImTXhw5J2pv). Raw values live on :root (light) with
+  dark overrides via prefers-color-scheme and an explicit [data-theme].
+  @theme inline maps them to Tailwind utilities (bg-*, text-*, border-*)
+  so theme switching is a pure CSS-variable swap.
+*/
+
+:root {
+  /* surfaces */
+  --c-canvas: #f8fafc;
+  --c-surface: #ffffff;
+  --c-raised: #ffffff;
+  --c-subtle: #f1f5f9;
+  --c-inset: #f1f5f9;
+  /* text */
+  --c-ink: #0f172a;
+  --c-ink2: #475569;
+  --c-ink3: #94a3b8;
+  --c-ink-inverse: #ffffff;
+  /* lines */
+  --c-line: #cbd5e1;
+  --c-line-subtle: #e2e8f0;
+  --c-line-strong: #94a3b8;
+  /* brand (indigo) */
+  --c-brand: #4f46e5;
+  --c-brand-hover: #4338ca;
+  --c-brand-bg: #eef2ff;
+  --c-brand-on: #ffffff;
+  /* isolation (teal) — the hero accent */
+  --c-iso: #0d9488;
+  --c-iso-strong: #0f766e;
+  --c-iso-bg: #f0fdfa;
+  /* status */
+  --c-run: #16a34a;
+  --c-run-bg: #f0fdf4;
+  --c-prov: #f59e0b;
+  --c-prov-bg: #fffbeb;
+  --c-idle: #94a3b8;
+  --c-idle-bg: #f1f5f9;
+  --c-tear: #d97706;
+  --c-tear-bg: #fffbeb;
+  --c-stop: #64748b;
+  --c-stop-bg: #f1f5f9;
+  /* cost */
+  --c-under: #22c55e;
+  --c-warn: #f59e0b;
+  --c-over: #ef4444;
+  --c-ceiling: #f87171;
+  --c-track: #e2e8f0;
+  /* focus */
+  --c-focus: #6366f1;
+}
+
+.dark-tokens {
+  --c-canvas: #020617;
+  --c-surface: #0f172a;
+  --c-raised: #1e293b;
+  --c-subtle: #1e293b;
+  --c-inset: #020617;
+  --c-ink: #f8fafc;
+  --c-ink2: #cbd5e1;
+  --c-ink3: #64748b;
+  --c-ink-inverse: #0f172a;
+  --c-line: #334155;
+  --c-line-subtle: #1e293b;
+  --c-line-strong: #475569;
+  --c-brand: #6366f1;
+  --c-brand-hover: #818cf8;
+  --c-brand-bg: #1e1b4b;
+  --c-brand-on: #ffffff;
+  --c-iso: #2dd4bf;
+  --c-iso-strong: #14b8a6;
+  --c-iso-bg: #042f2e;
+  --c-run: #4ade80;
+  --c-run-bg: #052e16;
+  --c-prov: #fbbf24;
+  --c-prov-bg: #451a03;
+  --c-idle: #64748b;
+  --c-idle-bg: #1e293b;
+  --c-tear: #f59e0b;
+  --c-tear-bg: #451a03;
+  --c-stop: #94a3b8;
+  --c-stop-bg: #1e293b;
+  --c-under: #4ade80;
+  --c-warn: #fbbf24;
+  --c-over: #f87171;
+  --c-ceiling: #ef4444;
+  --c-track: #1e293b;
+  --c-focus: #818cf8;
+}
+
+/* Auto dark unless an explicit light theme is set on <html>. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --c-canvas: #020617;
+    --c-surface: #0f172a;
+    --c-raised: #1e293b;
+    --c-subtle: #1e293b;
+    --c-inset: #020617;
+    --c-ink: #f8fafc;
+    --c-ink2: #cbd5e1;
+    --c-ink3: #64748b;
+    --c-ink-inverse: #0f172a;
+    --c-line: #334155;
+    --c-line-subtle: #1e293b;
+    --c-line-strong: #475569;
+    --c-brand: #6366f1;
+    --c-brand-hover: #818cf8;
+    --c-brand-bg: #1e1b4b;
+    --c-iso: #2dd4bf;
+    --c-iso-strong: #14b8a6;
+    --c-iso-bg: #042f2e;
+    --c-run: #4ade80;
+    --c-run-bg: #052e16;
+    --c-prov: #fbbf24;
+    --c-prov-bg: #451a03;
+    --c-idle: #64748b;
+    --c-idle-bg: #1e293b;
+    --c-tear: #f59e0b;
+    --c-tear-bg: #451a03;
+    --c-stop: #94a3b8;
+    --c-stop-bg: #1e293b;
+    --c-under: #4ade80;
+    --c-warn: #fbbf24;
+    --c-over: #f87171;
+    --c-ceiling: #ef4444;
+    --c-track: #1e293b;
+    --c-focus: #818cf8;
+  }
+}
+
+/* Explicit theme override wins over the media query. */
+:root[data-theme="dark"] {
+  --c-canvas: #020617;
+  --c-surface: #0f172a;
+  --c-raised: #1e293b;
+  --c-subtle: #1e293b;
+  --c-inset: #020617;
+  --c-ink: #f8fafc;
+  --c-ink2: #cbd5e1;
+  --c-ink3: #64748b;
+  --c-ink-inverse: #0f172a;
+  --c-line: #334155;
+  --c-line-subtle: #1e293b;
+  --c-line-strong: #475569;
+  --c-brand: #6366f1;
+  --c-brand-hover: #818cf8;
+  --c-brand-bg: #1e1b4b;
+  --c-iso: #2dd4bf;
+  --c-iso-strong: #14b8a6;
+  --c-iso-bg: #042f2e;
+  --c-run: #4ade80;
+  --c-run-bg: #052e16;
+  --c-prov: #fbbf24;
+  --c-prov-bg: #451a03;
+  --c-idle: #64748b;
+  --c-idle-bg: #1e293b;
+  --c-tear: #f59e0b;
+  --c-tear-bg: #451a03;
+  --c-stop: #94a3b8;
+  --c-stop-bg: #1e293b;
+  --c-under: #4ade80;
+  --c-warn: #fbbf24;
+  --c-over: #f87171;
+  --c-ceiling: #ef4444;
+  --c-track: #1e293b;
+  --c-focus: #818cf8;
+}
+
+@theme inline {
+  --color-canvas: var(--c-canvas);
+  --color-surface: var(--c-surface);
+  --color-raised: var(--c-raised);
+  --color-subtle: var(--c-subtle);
+  --color-inset: var(--c-inset);
+  --color-ink: var(--c-ink);
+  --color-ink2: var(--c-ink2);
+  --color-ink3: var(--c-ink3);
+  --color-ink-inverse: var(--c-ink-inverse);
+  --color-line: var(--c-line);
+  --color-line-subtle: var(--c-line-subtle);
+  --color-line-strong: var(--c-line-strong);
+  --color-brand: var(--c-brand);
+  --color-brand-hover: var(--c-brand-hover);
+  --color-brand-bg: var(--c-brand-bg);
+  --color-brand-on: var(--c-brand-on);
+  --color-iso: var(--c-iso);
+  --color-iso-strong: var(--c-iso-strong);
+  --color-iso-bg: var(--c-iso-bg);
+  --color-run: var(--c-run);
+  --color-run-bg: var(--c-run-bg);
+  --color-prov: var(--c-prov);
+  --color-prov-bg: var(--c-prov-bg);
+  --color-idle: var(--c-idle);
+  --color-idle-bg: var(--c-idle-bg);
+  --color-tear: var(--c-tear);
+  --color-tear-bg: var(--c-tear-bg);
+  --color-stop: var(--c-stop);
+  --color-stop-bg: var(--c-stop-bg);
+  --color-under: var(--c-under);
+  --color-warn: var(--c-warn);
+  --color-over: var(--c-over);
+  --color-ceiling: var(--c-ceiling);
+  --color-track: var(--c-track);
+  --color-focus: var(--c-focus);
+
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 20px;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SFMono-Regular", monospace;
+}
+
+html,
+body {
+  background: var(--c-canvas);
+  color: var(--c-ink);
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--c-focus);
+  outline-offset: 2px;
+}

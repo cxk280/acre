@@ -16,6 +16,9 @@ dist/
 build/
 .next/
 out/
+*.tsbuildinfo
+next-env.d.ts
+/coverage
 
 # OS / editor
 .DS_Store
