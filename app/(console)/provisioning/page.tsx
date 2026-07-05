@@ -28,7 +28,7 @@ export default function ProvisioningPage() {
   const [name, setName] = useState("Harbor Free Clinic");
   const [regionCode, setRegionCode] = useState(REGIONS[0].code);
   const [sliceSize, setSliceSize] = useState<SliceSize>(SLICE_OPTIONS[0].size);
-  const [model, setModel] = useState<string>(MODELS[0]);
+  const [model, setModel] = useState<string>(MODELS[0].id);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createdId, setCreatedId] = useState<string | null>(null);
@@ -114,7 +114,6 @@ export default function ProvisioningPage() {
                   {group.regions.map((r) => (
                     <option key={r.code} value={r.code}>
                       {r.label} · {r.country}
-                      {r.atCapacity ? " (at capacity)" : ""}
                     </option>
                   ))}
                 </optgroup>
@@ -144,8 +143,8 @@ export default function ProvisioningPage() {
               disabled={inFlight}
             >
               {MODELS.map((m) => (
-                <option key={m} value={m}>
-                  {m}
+                <option key={m.id} value={m.id}>
+                  {m.label}
                 </option>
               ))}
             </Select>

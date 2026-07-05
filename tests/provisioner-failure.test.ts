@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { MockProvisioner } from "@/lib/provisioner/mock";
 import {
   createInMemoryTenantRepository,
@@ -11,6 +11,13 @@ function provisioner(repo: TenantRepository) {
 
 describe("MockProvisioner — capacity failure + retry", () => {
   let repo: TenantRepository;
+  // Bangalore is not at capacity by default; opt it in for these tests.
+  beforeAll(() => {
+    process.env.ACRE_CAPACITY_REGIONS = "blr";
+  });
+  afterAll(() => {
+    delete process.env.ACRE_CAPACITY_REGIONS;
+  });
   beforeEach(() => {
     repo = createInMemoryTenantRepository();
   });
@@ -18,7 +25,7 @@ describe("MockProvisioner — capacity failure + retry", () => {
   it("fails at the slice step when the region is at capacity", () => {
     const t = repo.create({
       name: "Harbor",
-      regionCode: "blr", // Bangalore is marked atCapacity
+      regionCode: "blr", // opted into capacity failure via env above
       sliceSize: "a16-1_8",
       model: "Llama-3-8B",
     });

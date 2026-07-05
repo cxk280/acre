@@ -5,7 +5,7 @@ const valid = {
   name: "Harbor Free Clinic",
   regionCode: "ewr",
   sliceSize: "a16-1_8",
-  model: "Llama-3-8B",
+  model: "deepseek-ai/DeepSeek-V4-Flash",
 };
 
 describe("parseCreateTenantInput", () => {

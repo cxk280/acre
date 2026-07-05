@@ -5,6 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
+    "dev:local": "ACRE_INFERENCE=ollama next dev",
+    "dev:vultr": "ACRE_INFERENCE=vultr next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",

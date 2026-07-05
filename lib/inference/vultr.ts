@@ -24,14 +24,20 @@ export class VultrInference implements Inference {
 
   async infer(input: InferenceInput): Promise<InferenceResult> {
     const started = Date.now();
+    // Route to the tenant's chosen model; fall back to the env default.
+    const model = input.model || this.model;
     const res = await fetch(`${BASE_URL}/chat/completions`, {
       method: "POST",
       headers: {
         "content-type": "application/json",
         authorization: `Bearer ${this.apiKey}`,
       },
+      signal: AbortSignal.timeout(
+        Number(process.env.VULTR_INFERENCE_TIMEOUT_MS ?? 30000),
+      ),
       body: JSON.stringify({
-        model: this.model,
+        model,
+        max_tokens: 400,
         messages: [
           { role: "system", content: INFERENCE_SYSTEM_PROMPT },
           ...(input.history ?? []),
@@ -48,10 +54,12 @@ export class VultrInference implements Inference {
     }
 
     const data = (await res.json()) as {
-      choices?: { message?: { content?: string } }[];
+      choices?: { message?: { content?: string; reasoning?: string } }[];
       usage?: { total_tokens?: number };
     };
-    const reply = data.choices?.[0]?.message?.content?.trim() ?? "";
+    const message = data.choices?.[0]?.message;
+    // Prefer the answer; if a reasoning model returned only its thinking, show that.
+    const reply = (message?.content || message?.reasoning || "").trim();
     return {
       reply,
       tokens: data.usage?.total_tokens ?? 0,

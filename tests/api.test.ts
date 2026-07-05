@@ -16,7 +16,7 @@ const validBody = {
   name: "API Test Clinic",
   regionCode: "ewr",
   sliceSize: "a16-1_8",
-  model: "Llama-3-8B",
+  model: "deepseek-ai/DeepSeek-V4-Flash",
 };
 
 describe("tenants API route handlers", () => {

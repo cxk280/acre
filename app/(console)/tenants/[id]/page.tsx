@@ -11,6 +11,7 @@ import { Icon } from "@/components/icons";
 import { IsolationBadgeExpanded } from "@/components/IsolationBadge";
 import { StatusPill } from "@/components/StatusPill";
 import { teardownTenant } from "@/lib/api/client";
+import { modelLabel } from "@/lib/domain/catalog";
 import { liveSessionCost } from "@/lib/domain/rates";
 import type { Tenant } from "@/lib/domain/types";
 import { cn } from "@/lib/cn";
@@ -148,7 +149,6 @@ function Eyebrow({ children }: { children: React.ReactNode }) {
 function EndpointCard({ tenant, uptimeMs }: { tenant: Tenant; uptimeMs: number }) {
   const [copied, setCopied] = useState(false);
   const url = tenant.endpointUrl;
-  const modelSlug = tenant.model.toLowerCase().replace(/\s+/g, "-");
   const healthy = tenant.status === "running";
 
   async function copy() {
@@ -184,7 +184,7 @@ function EndpointCard({ tenant, uptimeMs }: { tenant: Tenant; uptimeMs: number }
       {copied && <span className="text-xs text-iso-strong">Copied to clipboard</span>}
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-        <Stat label="Model" value={tenant.model} />
+        <Stat label="Model" value={modelLabel(tenant.model)} />
         <Stat
           label="Health"
           value={healthy ? "● Healthy" : "—"}
@@ -205,7 +205,7 @@ function EndpointCard({ tenant, uptimeMs }: { tenant: Tenant; uptimeMs: number }
           {"  "}-H &quot;Authorization: Bearer $ACRE_KEY&quot; \
         </span>
         <span className="text-iso">
-          {"  "}-d &apos;&#123;&quot;model&quot;:&quot;{modelSlug}&quot;,&quot;messages&quot;:[…]&#125;&apos;
+          {"  "}-d &apos;&#123;&quot;model&quot;:&quot;{tenant.model}&quot;,&quot;messages&quot;:[…]&#125;&apos;
         </span>
       </div>
     </div>
@@ -240,7 +240,10 @@ function activityFor(tenant: Tenant): ActivityEvent[] {
   const events: ActivityEvent[] = [];
   if (tenant.status === "running") {
     events.push({ label: "Endpoint live", color: "bg-run" });
-    events.push({ label: `Model ${tenant.model} loaded`, color: "bg-ink3" });
+    events.push({
+      label: `Model ${modelLabel(tenant.model)} loaded`,
+      color: "bg-ink3",
+    });
   }
   if (tenant.status === "stopped") {
     events.push({ label: "Tenant torn down — resources released", color: "bg-stop" });
