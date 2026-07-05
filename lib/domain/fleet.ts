@@ -18,7 +18,9 @@ export interface FleetSummary {
 }
 
 export function computeFleetSummary(tenants: Tenant[]): FleetSummary {
-  const active = tenants.filter((t) => t.status !== "stopped");
+  const active = tenants.filter(
+    (t) => t.status !== "stopped" && t.status !== "failed",
+  );
   return {
     activeTenants: active.length,
     runningTenants: tenants.filter((t) => t.status === "running").length,

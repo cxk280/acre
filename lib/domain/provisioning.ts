@@ -3,6 +3,7 @@
 // the transition pure (a Tenant in, a Tenant out) lets both the mock provisioner
 // and tests drive it deterministically.
 
+import type { Region } from "./catalog";
 import type { ProvisionStepKey, Tenant } from "./types";
 
 export interface ProvisionStep {
@@ -54,6 +55,46 @@ export const PROVISION_STEP_ORDER: ProvisionStepKey[] = PROVISION_STEPS.map(
 
 export function endpointUrlFor(tenantId: string): string {
   return `https://${tenantId}.acre.io/v1`;
+}
+
+/** Mark provisioning as failed at a step — nothing was reserved or charged. */
+export function failProvisioning(
+  tenant: Tenant,
+  step: ProvisionStepKey,
+  message: string,
+): Tenant {
+  return {
+    ...tenant,
+    status: "failed",
+    currentStep: null,
+    failure: { step, message },
+  };
+}
+
+/**
+ * Reset a tenant back to a clean "provisioning" state for a retry, optionally in
+ * a new region. Since a failure at the slice step reserved nothing, this clears
+ * all isolation/billing state so the retry starts fresh.
+ */
+export function resetForRetry(tenant: Tenant, newRegion?: Region): Tenant {
+  return {
+    ...tenant,
+    region: newRegion?.label ?? tenant.region,
+    regionCode: newRegion?.code ?? tenant.regionCode,
+    status: "provisioning",
+    failure: null,
+    currentStep: null,
+    completedSteps: [],
+    endpointUrl: null,
+    provisionedAt: null,
+    billingStartedAt: null,
+    billingStoppedAt: null,
+    isolation: {
+      gpuSlice: { ...tenant.isolation.gpuSlice, confirmed: false },
+      vpc: { ...tenant.isolation.vpc, confirmed: false },
+      bucket: { ...tenant.isolation.bucket, confirmed: false },
+    },
+  };
 }
 
 /**

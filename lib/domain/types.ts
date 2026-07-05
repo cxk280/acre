@@ -9,7 +9,14 @@ export type TenantStatus =
   | "running"
   | "idle"
   | "tearing_down"
-  | "stopped";
+  | "stopped"
+  | "failed";
+
+export interface FailureInfo {
+  /** The provisioning step that failed. */
+  step: ProvisionStepKey;
+  message: string;
+}
 
 /** Fractional slices of a Vultr A16 GPU. The whole story: rent a fraction. */
 export type SliceSize = "a16-1_8" | "a16-1_4" | "a16-1_2";
@@ -55,6 +62,8 @@ export interface Tenant {
   /** The provisioning step currently in flight, or null when settled. */
   currentStep: ProvisionStepKey | null;
   completedSteps: ProvisionStepKey[];
+  /** Set when provisioning failed (e.g. region at capacity); null otherwise. */
+  failure: FailureInfo | null;
 }
 
 export interface CreateTenantInput {

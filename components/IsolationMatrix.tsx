@@ -7,7 +7,9 @@ import { StatusPill } from "./StatusPill";
 // The multi-tenant isolation proof: one row per tenant, each with its OWN GPU
 // slice, VPC/CIDR, and bucket — no shared cells anywhere in the grid.
 export function IsolationMatrix({ tenants }: { tenants: Tenant[] }) {
-  const active = tenants.filter((t) => t.status !== "stopped");
+  const active = tenants.filter(
+    (t) => t.status !== "stopped" && t.status !== "failed",
+  );
 
   if (active.length === 0) {
     return (

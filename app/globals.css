@@ -50,6 +50,7 @@
   --c-over: #ef4444;
   --c-ceiling: #f87171;
   --c-track: #e2e8f0;
+  --c-danger-bg: #fef2f2;
   /* focus */
   --c-focus: #6366f1;
 }
@@ -128,6 +129,7 @@
     --c-over: #f87171;
     --c-ceiling: #ef4444;
     --c-track: #1e293b;
+    --c-danger-bg: #450a0a;
     --c-focus: #818cf8;
   }
 }
@@ -167,6 +169,7 @@
   --c-over: #f87171;
   --c-ceiling: #ef4444;
   --c-track: #1e293b;
+  --c-danger-bg: #450a0a;
   --c-focus: #818cf8;
 }
 
@@ -205,6 +208,7 @@
   --color-over: var(--c-over);
   --color-ceiling: var(--c-ceiling);
   --color-track: var(--c-track);
+  --color-danger-bg: var(--c-danger-bg);
   --color-focus: var(--c-focus);
 
   --radius-sm: 6px;

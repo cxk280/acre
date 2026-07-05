@@ -3,9 +3,12 @@
 // build and the cost meter start ticking. The schedule + step durations are
 // injectable so tests can drive it synchronously with an immediate scheduler.
 
+import { isRegionAtCapacity, regionByCode } from "@/lib/domain/catalog";
 import {
   PROVISION_STEP_ORDER,
   applyProvisionStep,
+  failProvisioning,
+  resetForRetry,
 } from "@/lib/domain/provisioning";
 import type { ProvisionStepKey } from "@/lib/domain/types";
 import type { TenantRepository } from "@/lib/store/tenant-repository";
@@ -62,11 +65,30 @@ export class MockProvisioner implements Provisioner {
     this.schedule(() => {
       const current = this.repo.get(tenantId);
       if (!current || this.isAborted(current.status)) return;
+      // Reserving the GPU slice is where capacity limits bite.
+      if (step === "slice" && isRegionAtCapacity(current.regionCode)) {
+        this.repo.save(
+          failProvisioning(
+            current,
+            "slice",
+            `No free A16 slices in ${current.region} right now.`,
+          ),
+        );
+        return;
+      }
       this.repo.save(applyProvisionStep(current, step, this.now()));
       if (index + 1 < PROVISION_STEP_ORDER.length) {
         this.runStep(tenantId, index + 1);
       }
     }, this.stepMs[step]);
+  }
+
+  retry(tenantId: string, regionCode?: string): void {
+    const tenant = this.repo.get(tenantId);
+    if (!tenant) return;
+    const newRegion = regionCode ? regionByCode(regionCode) : undefined;
+    this.repo.save(resetForRetry(tenant, newRegion));
+    this.provision(tenantId);
   }
 
   teardown(tenantId: string): void {

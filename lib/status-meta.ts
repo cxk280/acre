@@ -50,4 +50,11 @@ export const STATUS_META: Record<TenantStatus, StatusMeta> = {
     dot: "bg-stop",
     pulse: false,
   },
+  failed: {
+    label: "Failed",
+    bg: "bg-danger-bg",
+    fg: "text-over",
+    dot: "bg-over",
+    pulse: false,
+  },
 };

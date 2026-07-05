@@ -7,6 +7,8 @@ import type { SliceSize } from "./types";
 export interface Region {
   code: string;
   label: string;
+  /** No free A16 slices right now — provisioning here fails (demoes capacity). */
+  atCapacity?: boolean;
 }
 
 export const REGIONS: Region[] = [
@@ -14,7 +16,12 @@ export const REGIONS: Region[] = [
   { code: "ams", label: "EU-West · Amsterdam" },
   { code: "sjc", label: "US-West · Silicon Valley" },
   { code: "lhr", label: "EU-West · London" },
+  { code: "blr", label: "AP-South · Bangalore", atCapacity: true },
 ];
+
+export function isRegionAtCapacity(code: string): boolean {
+  return regionByCode(code)?.atCapacity === true;
+}
 
 export const MODELS = [
   "Llama-3-8B",

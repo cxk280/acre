@@ -19,7 +19,9 @@ export function FleetMeter() {
       try {
         const tenants = await listTenants(controller.signal);
         if (cancelled) return;
-        const active = tenants.filter((t) => t.status !== "stopped");
+        const active = tenants.filter(
+          (t) => t.status !== "stopped" && t.status !== "failed",
+        );
         setCount(active.length);
         setFleetRate(
           active
