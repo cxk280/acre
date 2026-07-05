@@ -95,6 +95,7 @@ export default function ProvisioningPage() {
               placeholder="e.g. Harbor Free Clinic"
               aria-label="Tenant name"
               maxLength={60}
+              disabled={inFlight}
             />
           </Field>
 
@@ -106,6 +107,7 @@ export default function ProvisioningPage() {
               value={regionCode}
               onChange={(e) => setRegionCode(e.target.value)}
               aria-label="Region"
+              disabled={inFlight}
             >
               {regionsByContinent().map((group) => (
                 <optgroup key={group.continent} label={group.continent}>
@@ -125,6 +127,7 @@ export default function ProvisioningPage() {
               ariaLabel="GPU slice size"
               value={sliceSize}
               onChange={(v) => setSliceSize(v as SliceSize)}
+              disabled={inFlight}
               options={SLICE_OPTIONS.map((s) => ({
                 value: s.size,
                 title: `${s.accelerator} · ${s.fraction}`,
@@ -138,6 +141,7 @@ export default function ProvisioningPage() {
               value={model}
               onChange={(e) => setModel(e.target.value)}
               aria-label="Model to preload"
+              disabled={inFlight}
             >
               {MODELS.map((m) => (
                 <option key={m} value={m}>

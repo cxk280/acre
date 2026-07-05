@@ -34,12 +34,19 @@ export class OllamaInference implements Inference {
       const res = await fetch(`${OLLAMA_URL}/api/chat`, {
         method: "POST",
         headers: { "content-type": "application/json" },
+        // Cap the wait so a slow/stuck model can't hang the Playground — on
+        // timeout we fall back to the mock below.
+        signal: AbortSignal.timeout(
+          Number(process.env.OLLAMA_TIMEOUT_MS ?? 45000),
+        ),
         body: JSON.stringify({
           model: ollamaModel(input.model),
           stream: false,
           // Keep the model resident so only the FIRST query pays the cold-load
           // cost — the rest of a demo session stays snappy.
           keep_alive: "30m",
+          // Bound the answer length so replies come back in a few seconds.
+          options: { num_predict: 300 },
           messages: [
             { role: "system", content: INFERENCE_SYSTEM_PROMPT },
             ...(input.history ?? []),
