@@ -50,6 +50,20 @@ export async function teardownTenant(id: string): Promise<Tenant> {
   return body.tenant;
 }
 
+export async function retryTenant(
+  id: string,
+  regionCode?: string,
+): Promise<Tenant> {
+  const res = await fetch(`/api/tenants/${id}/retry`, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ regionCode }),
+  });
+  if (!res.ok) throw new Error(await readError(res));
+  const body = (await res.json()) as { tenant: Tenant };
+  return body.tenant;
+}
+
 export async function teardownAllTenants(): Promise<number> {
   const res = await fetch("/api/tenants/teardown-all", { method: "POST" });
   if (!res.ok) throw new Error(await readError(res));

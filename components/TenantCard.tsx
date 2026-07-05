@@ -38,7 +38,13 @@ export function TenantCard({
 
       <IsolationBadgeCompact isolation={tenant.isolation} />
 
-      <CostMeterInline ratePerHour={tenant.ratePerHour} />
+      {tenant.status === "failed" ? (
+        <p className="text-[13px] text-over">
+          {tenant.failure?.message ?? "Provisioning failed."}
+        </p>
+      ) : (
+        <CostMeterInline ratePerHour={tenant.ratePerHour} />
+      )}
 
       <div className="flex items-center gap-2 border-t border-line-subtle pt-3.5">
         <span className="flex items-center gap-1.5">
