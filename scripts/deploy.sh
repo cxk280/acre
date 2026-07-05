@@ -59,6 +59,10 @@ if ! command -v node >/dev/null 2>&1 || [ "$(node -p 'process.versions.node.spli
   curl -fsSL https://deb.nodesource.com/setup_20.x | bash - >/dev/null 2>&1
   apt-get install -y nodejs >/dev/null 2>&1
 fi
+# Some Ubuntu images ship ufw active with only SSH allowed — open HTTP.
+if command -v ufw >/dev/null 2>&1 && ufw status 2>/dev/null | grep -q "Status: active"; then
+  ufw allow 80/tcp >/dev/null 2>&1 || true
+fi
 mkdir -p /opt/acre
 find /opt/acre -mindepth 1 -maxdepth 1 -not -name '.env' -exec rm -rf {} +
 tar -C /opt/acre -xzf /tmp/acre.tgz
