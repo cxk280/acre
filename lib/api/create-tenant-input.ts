@@ -1,7 +1,7 @@
 // Parse + validate an untrusted request body into a CreateTenantInput. Kept as a
 // pure function so it can be unit-tested and reused; the route handler stays thin.
 
-import { MODELS, type Model, regionByCode, SLICE_OPTIONS } from "@/lib/domain/catalog";
+import { MODELS, regionByCode, SLICE_OPTIONS } from "@/lib/domain/catalog";
 import type { CreateTenantInput, SliceSize } from "@/lib/domain/types";
 
 export type ParseResult<T> =
@@ -38,7 +38,7 @@ export function parseCreateTenantInput(
   }
 
   const model = typeof b.model === "string" ? b.model : "";
-  if (!MODELS.includes(model as Model)) {
+  if (!MODELS.some((m) => m.id === model)) {
     return { ok: false, error: `Unknown model: ${model || "(empty)"}.` };
   }
 

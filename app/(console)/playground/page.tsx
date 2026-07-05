@@ -7,6 +7,7 @@ import { useTenants } from "@/components/hooks";
 import { Select } from "@/components/form";
 import { Icon } from "@/components/icons";
 import { runInference } from "@/lib/api/client";
+import { modelLabel } from "@/lib/domain/catalog";
 import type { ChatRole } from "@/lib/domain/inference";
 import { cn } from "@/lib/cn";
 import { formatRate } from "@/lib/format";
@@ -96,7 +97,7 @@ export default function PlaygroundPage() {
             turns={turns}
             pending={pending}
             error={error}
-            model={selected?.model ?? "the model"}
+            model={selected ? modelLabel(selected.model) : "the model"}
             input={input}
             onInput={setInput}
             onSend={send}

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { cn } from "@/lib/cn";
+import { modelLabel } from "@/lib/domain/catalog";
 import type { Tenant } from "@/lib/domain/types";
 import { STATUS_META } from "@/lib/status-meta";
 import { buttonClass } from "./Button";
@@ -51,7 +52,9 @@ export function TenantCard({
           <span
             className={cn("size-[7px] rounded-full", STATUS_META[tenant.status].dot)}
           />
-          <span className="text-xs font-medium text-ink2">{tenant.model}</span>
+          <span className="text-xs font-medium text-ink2">
+            {modelLabel(tenant.model)}
+          </span>
         </span>
         <div className="ml-auto flex items-center gap-2">
           {onTearDown && canTearDown && (

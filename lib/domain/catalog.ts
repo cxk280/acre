@@ -10,13 +10,11 @@ export interface Region {
   label: string;
   continent: string;
   country: string;
-  /** No free A16 slices right now — provisioning here fails (demoes capacity). */
-  atCapacity?: boolean;
 }
 
 // The full set of Vultr regions (source: Vultr /v2/regions). New Jersey (ewr) is
-// first so it's the provisioning default. Bangalore is flagged at-capacity to demo
-// the failure/retry flow.
+// first so it's the provisioning default. Every region provisions by default; to
+// demo the capacity-failure/retry flow, set ACRE_CAPACITY_REGIONS (see below).
 export const REGIONS: Region[] = [
   // North America
   { code: "ewr", label: "New Jersey", continent: "North America", country: "US" },
@@ -45,7 +43,7 @@ export const REGIONS: Region[] = [
   { code: "itm", label: "Osaka", continent: "Asia", country: "JP" },
   { code: "icn", label: "Seoul", continent: "Asia", country: "KR" },
   { code: "sgp", label: "Singapore", continent: "Asia", country: "SG" },
-  { code: "blr", label: "Bangalore", continent: "Asia", country: "IN", atCapacity: true },
+  { code: "blr", label: "Bangalore", continent: "Asia", country: "IN" },
   { code: "del", label: "Delhi NCR", continent: "Asia", country: "IN" },
   { code: "bom", label: "Mumbai", continent: "Asia", country: "IN" },
   { code: "tlv", label: "Tel Aviv", continent: "Asia", country: "IL" },
@@ -73,18 +71,35 @@ export function regionsByContinent(): { continent: string; regions: Region[] }[]
   return groups;
 }
 
+// Capacity failure is opt-in via env (comma-separated region codes), so by
+// default every region provisions successfully. e.g. ACRE_CAPACITY_REGIONS=blr
+// makes Bangalore fail, to demo the failure/retry flow. Server-side only.
 export function isRegionAtCapacity(code: string): boolean {
-  return regionByCode(code)?.atCapacity === true;
+  const list = process.env.ACRE_CAPACITY_REGIONS;
+  if (!list) return false;
+  return list
+    .split(",")
+    .map((c) => c.trim())
+    .includes(code);
 }
 
-export const MODELS = [
-  "Llama-3-8B",
-  "Mistral-7B",
-  "Phi-3-mini",
-  "Qwen2-7B",
-] as const;
+export interface ModelOption {
+  /** Provider model id sent to inference (a real Vultr Serverless model). */
+  id: string;
+  /** Friendly display name. */
+  label: string;
+}
 
-export type Model = (typeof MODELS)[number];
+// Real Vultr Serverless Inference chat models — fast, non-reasoning ones verified
+// to return clean answers. The chosen id is sent straight through to Vultr.
+export const MODELS: ModelOption[] = [
+  { id: "deepseek-ai/DeepSeek-V4-Flash", label: "DeepSeek V4 Flash" },
+  { id: "MiniMaxAI/MiniMax-M2.7", label: "MiniMax M2.7" },
+];
+
+export function modelLabel(id: string): string {
+  return MODELS.find((m) => m.id === id)?.label ?? id;
+}
 
 export interface SliceOption {
   size: SliceSize;
