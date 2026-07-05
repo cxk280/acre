@@ -3,6 +3,7 @@
 
 import type { InferenceResult } from "@/lib/domain/inference";
 import type { CreateTenantInput, Tenant } from "@/lib/domain/types";
+import type { FleetSample } from "@/lib/metrics/fleet-history";
 
 async function readError(res: Response): Promise<string> {
   try {
@@ -62,6 +63,19 @@ export async function retryTenant(
   if (!res.ok) throw new Error(await readError(res));
   const body = (await res.json()) as { tenant: Tenant };
   return body.tenant;
+}
+
+export interface FleetHistorySnapshot {
+  samples: FleetSample[];
+  ceiling: number;
+}
+
+export async function getFleetHistory(
+  signal?: AbortSignal,
+): Promise<FleetHistorySnapshot> {
+  const res = await fetch("/api/fleet/history", { signal, cache: "no-store" });
+  if (!res.ok) throw new Error(await readError(res));
+  return (await res.json()) as FleetHistorySnapshot;
 }
 
 export async function teardownAllTenants(): Promise<number> {

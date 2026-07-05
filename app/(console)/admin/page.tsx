@@ -5,12 +5,11 @@ import { buttonClass } from "@/components/Button";
 import { useTenants } from "@/components/hooks";
 import { Icon } from "@/components/icons";
 import { IsolationMatrix } from "@/components/IsolationMatrix";
+import { SpendHistory } from "@/components/SpendHistory";
 import { teardownAllTenants } from "@/lib/api/client";
 import { computeFleetSummary } from "@/lib/domain/fleet";
-import { isBillingActive } from "@/lib/domain/rates";
-import type { Tenant } from "@/lib/domain/types";
 import { cn } from "@/lib/cn";
-import { formatRate, formatUsd } from "@/lib/format";
+import { formatRate } from "@/lib/format";
 
 const CARD = "rounded-lg border border-line-subtle bg-surface p-5";
 
@@ -71,9 +70,9 @@ export default function AdminPage() {
       <div className={cn(CARD, "flex flex-col gap-4")}>
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex flex-col gap-0.5">
-            <Eyebrow>Fleet spend by tenant</Eyebrow>
+            <Eyebrow>Fleet spend — last few minutes</Eyebrow>
             <span className="text-xs text-ink2">
-              Elastic: tear a tenant down and its spend drops to zero.
+              Elastic: tear tenants down and watch the fleet spend collapse.
             </span>
           </div>
           <button
@@ -86,7 +85,7 @@ export default function AdminPage() {
             {tearing ? "Tearing down…" : "Tear down all demo tenants"}
           </button>
         </div>
-        <SpendBars tenants={tenants ?? []} />
+        <SpendHistory />
       </div>
     </div>
   );
@@ -118,39 +117,6 @@ function Tile({
         {value}
       </span>
       <span className="text-xs text-ink2">{sub}</span>
-    </div>
-  );
-}
-
-function SpendBars({ tenants }: { tenants: Tenant[] }) {
-  const billing = tenants.filter(isBillingActive);
-  if (billing.length === 0) {
-    return (
-      <p className="py-4 text-sm text-ink3">
-        No billing tenants right now — fleet spend is $0.00/hr.
-      </p>
-    );
-  }
-  // Scale bars against the $0.50 ceiling so the "well under" story is visible.
-  return (
-    <div className="flex flex-col gap-3">
-      {billing.map((t) => (
-        <div key={t.id} className="flex items-center gap-3">
-          <span className="w-40 shrink-0 truncate text-[13px] text-ink">
-            {t.name}
-          </span>
-          <div className="relative h-2.5 flex-1 rounded-full bg-track">
-            <div
-              className="absolute inset-y-0 left-0 rounded-full bg-under"
-              style={{ width: `${Math.min(t.ratePerHour / 0.5, 1) * 100}%` }}
-            />
-            <div className="absolute inset-y-0 right-0 w-0.5 rounded-full bg-ceiling" />
-          </div>
-          <span className="w-16 shrink-0 text-right font-mono text-[13px] text-under">
-            {formatUsd(t.ratePerHour)}
-          </span>
-        </div>
-      ))}
     </div>
   );
 }
