@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Button, buttonClass } from "@/components/Button";
-import { useNow, useTenant } from "@/components/hooks";
+import { useNow, useTenantStream } from "@/components/hooks";
 import { Icon } from "@/components/icons";
 import { Field, Segmented, Select, TextInput } from "@/components/form";
 import { IsolationBadgeCompact } from "@/components/IsolationBadge";
@@ -26,7 +26,7 @@ export default function ProvisioningPage() {
   const [error, setError] = useState<string | null>(null);
   const [createdId, setCreatedId] = useState<string | null>(null);
 
-  const { tenant } = useTenant(createdId);
+  const { tenant } = useTenantStream(createdId);
   const now = useNow(1000);
   const estimate = sliceOption(sliceSize).ratePerHour;
 

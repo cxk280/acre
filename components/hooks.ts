@@ -53,6 +53,37 @@ interface TenantState {
   error: string | null;
 }
 
+/**
+ * Subscribe to a tenant's live state over Server-Sent Events — the provisioning
+ * theater updates the instant a step completes, no polling. EventSource
+ * auto-reconnects on transient errors.
+ */
+export function useTenantStream(id: string | null): TenantState {
+  const [tenant, setTenant] = useState<Tenant | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!id) {
+      setTenant(null);
+      return;
+    }
+    const source = new EventSource(`/api/tenants/${id}/events`);
+    source.onmessage = (e) => {
+      try {
+        setTenant(JSON.parse(e.data) as Tenant);
+        setError(null);
+      } catch {
+        // ignore malformed frame
+      }
+    };
+    source.addEventListener("gone", () => source.close());
+    source.onerror = () => setError("Live connection interrupted — reconnecting…");
+    return () => source.close();
+  }, [id]);
+
+  return { tenant, error };
+}
+
 /** Poll a single tenant (fast enough to animate the provisioning theater). */
 export function useTenant(id: string | null, intervalMs = 900): TenantState {
   const [tenant, setTenant] = useState<Tenant | null>(null);
