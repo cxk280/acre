@@ -20,8 +20,10 @@ function buildInference(): Inference {
           "ACRE_INFERENCE=vultr requires VULTR_INFERENCE_API_KEY to be set.",
         );
       }
+      // Fallback only — set VULTR_INFERENCE_MODEL to a model on your account
+      // (list them via GET /v1/models); Vultr's catalog changes over time.
       const model =
-        process.env.VULTR_INFERENCE_MODEL ?? "llama2-13b-chat-Q5_K_M.gguf";
+        process.env.VULTR_INFERENCE_MODEL ?? "deepseek-ai/DeepSeek-V4-Flash";
       return new VultrInference(apiKey, model);
     }
     default:
