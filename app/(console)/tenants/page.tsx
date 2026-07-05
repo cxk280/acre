@@ -23,9 +23,12 @@ export default function TenantsPage() {
     }
   }
 
-  const running = tenants?.filter((t) => t.status === "running").length ?? 0;
-  const idle = tenants?.filter((t) => t.status === "idle").length ?? 0;
-  const isEmpty = tenants !== null && tenants.length === 0;
+  // A torn-down tenant is released — drop it from the list (same as the fleet
+  // meter and Admin view, which already exclude "stopped").
+  const visible = tenants?.filter((t) => t.status !== "stopped") ?? null;
+  const running = visible?.filter((t) => t.status === "running").length ?? 0;
+  const idle = visible?.filter((t) => t.status === "idle").length ?? 0;
+  const isEmpty = visible !== null && visible.length === 0;
 
   return (
     <div className="mx-auto flex max-w-[1200px] flex-col gap-6 p-8">
@@ -82,9 +85,9 @@ export default function TenantsPage() {
         </div>
       )}
 
-      {tenants && tenants.length > 0 && (
+      {visible && visible.length > 0 && (
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-          {tenants.map((tenant) => (
+          {visible.map((tenant) => (
             <TenantCard
               key={tenant.id}
               tenant={tenant}
