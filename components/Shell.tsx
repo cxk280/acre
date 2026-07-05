@@ -24,7 +24,7 @@ function TopBar() {
         className="flex items-center gap-1.5 rounded-md border border-line-subtle bg-subtle px-2.5 py-[7px] text-[13px] font-medium text-ink2"
       >
         <Icon name="pin" size={15} className="text-ink2" />
-        US-East · Ashburn
+        All regions
         <Icon name="chevron-down" size={14} className="text-ink3" />
       </button>
       <div className="ml-auto flex items-center gap-4">

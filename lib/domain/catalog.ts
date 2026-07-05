@@ -6,18 +6,72 @@ import type { SliceSize } from "./types";
 
 export interface Region {
   code: string;
+  /** City, e.g. "Amsterdam". Shown as the tenant's region. */
   label: string;
+  continent: string;
+  country: string;
   /** No free A16 slices right now — provisioning here fails (demoes capacity). */
   atCapacity?: boolean;
 }
 
+// The full set of Vultr regions (source: Vultr /v2/regions). New Jersey (ewr) is
+// first so it's the provisioning default. Bangalore is flagged at-capacity to demo
+// the failure/retry flow.
 export const REGIONS: Region[] = [
-  { code: "ewr", label: "US-East · Ashburn" },
-  { code: "ams", label: "EU-West · Amsterdam" },
-  { code: "sjc", label: "US-West · Silicon Valley" },
-  { code: "lhr", label: "EU-West · London" },
-  { code: "blr", label: "AP-South · Bangalore", atCapacity: true },
+  // North America
+  { code: "ewr", label: "New Jersey", continent: "North America", country: "US" },
+  { code: "ord", label: "Chicago", continent: "North America", country: "US" },
+  { code: "dfw", label: "Dallas", continent: "North America", country: "US" },
+  { code: "sea", label: "Seattle", continent: "North America", country: "US" },
+  { code: "lax", label: "Los Angeles", continent: "North America", country: "US" },
+  { code: "atl", label: "Atlanta", continent: "North America", country: "US" },
+  { code: "mia", label: "Miami", continent: "North America", country: "US" },
+  { code: "sjc", label: "Silicon Valley", continent: "North America", country: "US" },
+  { code: "hnl", label: "Honolulu", continent: "North America", country: "US" },
+  { code: "yto", label: "Toronto", continent: "North America", country: "CA" },
+  { code: "mex", label: "Mexico City", continent: "North America", country: "MX" },
+  // Europe
+  { code: "ams", label: "Amsterdam", continent: "Europe", country: "NL" },
+  { code: "lhr", label: "London", continent: "Europe", country: "GB" },
+  { code: "man", label: "Manchester", continent: "Europe", country: "GB" },
+  { code: "fra", label: "Frankfurt", continent: "Europe", country: "DE" },
+  { code: "cdg", label: "Paris", continent: "Europe", country: "FR" },
+  { code: "mad", label: "Madrid", continent: "Europe", country: "ES" },
+  { code: "mxp", label: "Milan", continent: "Europe", country: "IT" },
+  { code: "waw", label: "Warsaw", continent: "Europe", country: "PL" },
+  { code: "sto", label: "Stockholm", continent: "Europe", country: "SE" },
+  // Asia
+  { code: "nrt", label: "Tokyo", continent: "Asia", country: "JP" },
+  { code: "itm", label: "Osaka", continent: "Asia", country: "JP" },
+  { code: "icn", label: "Seoul", continent: "Asia", country: "KR" },
+  { code: "sgp", label: "Singapore", continent: "Asia", country: "SG" },
+  { code: "blr", label: "Bangalore", continent: "Asia", country: "IN", atCapacity: true },
+  { code: "del", label: "Delhi NCR", continent: "Asia", country: "IN" },
+  { code: "bom", label: "Mumbai", continent: "Asia", country: "IN" },
+  { code: "tlv", label: "Tel Aviv", continent: "Asia", country: "IL" },
+  // Australia
+  { code: "syd", label: "Sydney", continent: "Australia", country: "AU" },
+  { code: "mel", label: "Melbourne", continent: "Australia", country: "AU" },
+  // South America
+  { code: "sao", label: "São Paulo", continent: "South America", country: "BR" },
+  { code: "scl", label: "Santiago", continent: "South America", country: "CL" },
+  // Africa
+  { code: "jnb", label: "Johannesburg", continent: "Africa", country: "ZA" },
 ];
+
+/** Regions grouped by continent, preserving order — for grouped dropdowns. */
+export function regionsByContinent(): { continent: string; regions: Region[] }[] {
+  const groups: { continent: string; regions: Region[] }[] = [];
+  for (const region of REGIONS) {
+    let group = groups.find((g) => g.continent === region.continent);
+    if (!group) {
+      group = { continent: region.continent, regions: [] };
+      groups.push(group);
+    }
+    group.regions.push(region);
+  }
+  return groups;
+}
 
 export function isRegionAtCapacity(code: string): boolean {
   return regionByCode(code)?.atCapacity === true;

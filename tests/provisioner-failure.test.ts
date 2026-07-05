@@ -48,7 +48,7 @@ describe("MockProvisioner — capacity failure + retry", () => {
     const after = repo.get(t.id)!;
     expect(after.status).toBe("running");
     expect(after.failure).toBeNull();
-    expect(after.region).toBe("US-East · Ashburn");
+    expect(after.region).toBe("New Jersey");
     expect(after.isolation.gpuSlice.confirmed).toBe(true);
     expect(after.endpointUrl).toBe(`https://${t.id}.acre.io/v1`);
   });

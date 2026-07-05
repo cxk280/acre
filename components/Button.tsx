@@ -22,18 +22,36 @@ export function buttonClass(variant: ButtonVariant = "primary"): string {
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
   leftIcon?: IconName;
+  /** Show a spinner and disable the button while an action is in flight. */
+  loading?: boolean;
 }
 
 export function Button({
   variant = "primary",
   leftIcon,
+  loading = false,
   className,
   children,
+  disabled,
   ...props
 }: ButtonProps) {
   return (
-    <button className={cn(buttonClass(variant), className)} {...props}>
-      {leftIcon && <Icon name={leftIcon} size={16} strokeWidth={2.2} />}
+    <button
+      className={cn(buttonClass(variant), className)}
+      disabled={disabled || loading}
+      aria-busy={loading || undefined}
+      {...props}
+    >
+      {loading ? (
+        <Icon
+          name="spinner"
+          size={16}
+          strokeWidth={2.4}
+          className="animate-spin"
+        />
+      ) : (
+        leftIcon && <Icon name={leftIcon} size={16} strokeWidth={2.2} />
+      )}
       {children}
     </button>
   );

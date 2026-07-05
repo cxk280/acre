@@ -40,7 +40,7 @@ describe("computeFleetSummary", () => {
     // three billing tenants at $0.03 each
     expect(s.fleetRatePerHour).toBeCloseTo(0.09, 6);
     expect(s.fleetRatePerHour).toBeLessThan(0.5 * 4);
-    expect(s.regions.sort()).toEqual(["EU-West · Amsterdam", "US-East · Ashburn"]);
+    expect(s.regions.sort()).toEqual(["Amsterdam", "New Jersey"]);
     expect(s.sliceCount).toBe(4);
   });
 });
