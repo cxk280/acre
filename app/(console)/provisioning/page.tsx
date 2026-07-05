@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useState, useTransition } from "react";
 import { Button, buttonClass } from "@/components/Button";
 import { useNow, useTenantStream } from "@/components/hooks";
 import { Icon } from "@/components/icons";
@@ -9,7 +10,13 @@ import { Field, Segmented, Select, TextInput } from "@/components/form";
 import { IsolationBadgeCompact } from "@/components/IsolationBadge";
 import { Stepper } from "@/components/Stepper";
 import { createTenant, retryTenant } from "@/lib/api/client";
-import { MODELS, REGIONS, SLICE_OPTIONS, sliceOption } from "@/lib/domain/catalog";
+import {
+  MODELS,
+  REGIONS,
+  SLICE_OPTIONS,
+  regionsByContinent,
+  sliceOption,
+} from "@/lib/domain/catalog";
 import { liveSessionCost } from "@/lib/domain/rates";
 import type { SliceSize } from "@/lib/domain/types";
 import { cn } from "@/lib/cn";
@@ -29,6 +36,8 @@ export default function ProvisioningPage() {
   const { tenant } = useTenantStream(createdId);
   const now = useNow(1000);
   const estimate = sliceOption(sliceSize).ratePerHour;
+  // In flight for the whole provisioning run — not just the create request.
+  const inFlight = submitting || tenant?.status === "provisioning";
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -86,6 +95,7 @@ export default function ProvisioningPage() {
               placeholder="e.g. Harbor Free Clinic"
               aria-label="Tenant name"
               maxLength={60}
+              disabled={inFlight}
             />
           </Field>
 
@@ -97,12 +107,17 @@ export default function ProvisioningPage() {
               value={regionCode}
               onChange={(e) => setRegionCode(e.target.value)}
               aria-label="Region"
+              disabled={inFlight}
             >
-              {REGIONS.map((r) => (
-                <option key={r.code} value={r.code}>
-                  {r.label}
-                  {r.atCapacity ? " (at capacity)" : ""}
-                </option>
+              {regionsByContinent().map((group) => (
+                <optgroup key={group.continent} label={group.continent}>
+                  {group.regions.map((r) => (
+                    <option key={r.code} value={r.code}>
+                      {r.label} · {r.country}
+                      {r.atCapacity ? " (at capacity)" : ""}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </Select>
           </Field>
@@ -112,6 +127,7 @@ export default function ProvisioningPage() {
               ariaLabel="GPU slice size"
               value={sliceSize}
               onChange={(v) => setSliceSize(v as SliceSize)}
+              disabled={inFlight}
               options={SLICE_OPTIONS.map((s) => ({
                 value: s.size,
                 title: `${s.accelerator} · ${s.fraction}`,
@@ -125,6 +141,7 @@ export default function ProvisioningPage() {
               value={model}
               onChange={(e) => setModel(e.target.value)}
               aria-label="Model to preload"
+              disabled={inFlight}
             >
               {MODELS.map((m) => (
                 <option key={m} value={m}>
@@ -151,9 +168,10 @@ export default function ProvisioningPage() {
           <Button
             type="submit"
             leftIcon="zap"
-            disabled={submitting || !name.trim()}
+            loading={inFlight}
+            disabled={!name.trim()}
           >
-            {submitting ? "Provisioning…" : "Provision dedicated endpoint"}
+            {inFlight ? "Provisioning…" : "Provision dedicated endpoint"}
           </Button>
         </form>
 
@@ -200,6 +218,8 @@ function Theater({
   onRetry: () => void;
   retrying: boolean;
 }) {
+  const router = useRouter();
+  const [navigating, startNav] = useTransition();
   const live = tenant.status === "running";
   const failed = tenant.status === "failed";
   const confirmed = [
@@ -272,12 +292,14 @@ function Theater({
             {tenant.endpointUrl}
           </span>
           <div className="flex gap-2">
-            <Link
-              href={`/tenants/${tenant.id}`}
-              className={cn(buttonClass("primary"), "px-3 py-2")}
+            <Button
+              variant="primary"
+              loading={navigating}
+              onClick={() => startNav(() => router.push(`/tenants/${tenant.id}`))}
+              className="px-3 py-2"
             >
-              View tenant
-            </Link>
+              {navigating ? "Opening…" : "View tenant"}
+            </Button>
             <Link
               href="/playground"
               className={cn(buttonClass("ghost"), "px-3 py-2")}

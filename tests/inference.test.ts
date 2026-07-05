@@ -8,7 +8,7 @@ describe("MockInference", () => {
   const input = {
     prompt: "Summarize the intake note for patient #4471 in two sentences.",
     model: "Llama-3-8B",
-    region: "US-East · Ashburn",
+    region: "New Jersey",
   };
 
   it("returns a private-endpoint reply that names the model", async () => {

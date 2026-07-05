@@ -39,7 +39,7 @@ export interface Isolation {
 export interface Tenant {
   id: string;
   name: string;
-  /** Human region label, e.g. "US-East · Ashburn". */
+  /** Human region label, e.g. "New Jersey". */
   region: string;
   /** Vultr region code, e.g. "ewr". */
   regionCode: string;
