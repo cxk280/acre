@@ -1,33 +1,17 @@
-// MockInference — a deterministic, offline stand-in for a real per-tenant model
-// call. It returns a canned reply that emphasizes the private/isolated story,
-// with a plausible token count and latency. The delay is injectable so tests run
-// instantly while the app gets a realistic "streamed from your endpoint" feel.
+// MockInference — the offline fallback. It does NOT run a model, so it can't
+// answer questions; it returns a short, honest placeholder that names the model
+// and points at the real adapters. Used when ACRE_INFERENCE is unset, or when the
+// Ollama adapter can't reach a local model. The delay is injectable so tests run
+// instantly while the app gets a realistic latency.
 
 import type { InferenceResult } from "@/lib/domain/inference";
 import type { Inference, InferenceInput } from "./types";
 
 type DelayFn = (ms: number) => Promise<void>;
 
-const REPLY_TEMPLATES: Array<(clip: string, model: string, region: string) => string> = [
-  (clip, model, region) =>
-    `Running entirely on your dedicated ${model} slice — this request never left your private VPC in ${region}. On “${clip}”: I’ve handled it locally and can expand on any part you need.`,
-  (clip, model) =>
-    `Here’s a private, on-tenant answer from ${model}: I processed “${clip}” without touching any shared API. Want me to go deeper, or reformat the result?`,
-  (clip, model) =>
-    `Done — inference stayed inside your isolated endpoint. I’ve captured the key points of “${clip}” and sent nothing to a multi-tenant service. Ask a follow-up and I’ll keep it on ${model}.`,
-];
-
-function clip(text: string, max = 64): string {
+function clip(text: string, max = 80): string {
   const trimmed = text.trim().replace(/\s+/g, " ");
   return trimmed.length <= max ? trimmed : `${trimmed.slice(0, max - 1)}…`;
-}
-
-function stableHash(text: string): number {
-  let hash = 0;
-  for (let i = 0; i < text.length; i++) {
-    hash = (hash * 31 + text.charCodeAt(i)) >>> 0;
-  }
-  return hash;
 }
 
 /** Rough token estimate — ~1.4 tokens per whitespace-delimited word. */
@@ -49,12 +33,15 @@ export class MockInference implements Inference {
   }
 
   async infer(input: InferenceInput): Promise<InferenceResult> {
-    const template =
-      REPLY_TEMPLATES[stableHash(input.prompt) % REPLY_TEMPLATES.length];
-    const reply = template(clip(input.prompt), input.model, input.region);
-    const tokens = estimateTokens(input.prompt) + estimateTokens(reply);
-    const latencyMs = clamp(280 + input.prompt.length * 3, 280, 1200);
+    const prompt = input.prompt.trim();
+    const reply = prompt
+      ? `Demo endpoint — no model is loaded here yet, so I can't answer “${clip(prompt)}”. ` +
+        `Connect a real model (Ollama locally, or Vultr Serverless Inference once deployed) ` +
+        `to get a full answer on ${input.model}.`
+      : `Demo endpoint on ${input.model}. Ask a question once a model is connected.`;
 
+    const tokens = estimateTokens(prompt) + estimateTokens(reply);
+    const latencyMs = clamp(280 + prompt.length * 3, 280, 1200);
     await this.delay(latencyMs);
 
     return { reply, tokens, latencyMs, model: input.model };
