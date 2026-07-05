@@ -3,9 +3,21 @@ import { PROVISION_STEPS } from "@/lib/domain/provisioning";
 import type { Tenant } from "@/lib/domain/types";
 import { Icon } from "./icons";
 
-type StepState = "done" | "active" | "pending";
+type StepState = "done" | "active" | "pending" | "failed";
 
 function StepIcon({ state }: { state: StepState }) {
+  if (state === "failed") {
+    return (
+      <span className="flex size-6 items-center justify-center rounded-full bg-over">
+        <Icon
+          name="alert-triangle"
+          size={13}
+          strokeWidth={2.4}
+          className="text-white"
+        />
+      </span>
+    );
+  }
   if (state === "done") {
     return (
       <span className="flex size-6 items-center justify-center rounded-full bg-iso">
@@ -39,7 +51,15 @@ export function Stepper({ tenant }: { tenant: Tenant }) {
       {PROVISION_STEPS.map((step, i) => {
         const done = tenant.completedSteps.includes(step.key);
         const active = tenant.currentStep === step.key;
-        const state: StepState = done ? "done" : active ? "active" : "pending";
+        const failed =
+          tenant.status === "failed" && tenant.failure?.step === step.key;
+        const state: StepState = done
+          ? "done"
+          : failed
+            ? "failed"
+            : active
+              ? "active"
+              : "pending";
         const last = i === PROVISION_STEPS.length - 1;
 
         return (
@@ -61,22 +81,29 @@ export function Stepper({ tenant }: { tenant: Tenant }) {
                   "text-sm",
                   state === "active" && "font-semibold text-ink",
                   state === "done" && "font-medium text-ink",
+                  state === "failed" && "font-semibold text-over",
                   state === "pending" && "font-medium text-ink3",
                 )}
               >
-                {state === "active" ? step.activeLabel : step.doneLabel}
+                {state === "active" || state === "failed"
+                  ? step.activeLabel
+                  : step.doneLabel}
               </span>
               <span
                 className={cn(
                   "font-mono text-xs",
                   state === "active"
                     ? "text-prov"
-                    : state === "pending"
-                      ? "text-ink3"
-                      : "text-ink2",
+                    : state === "failed"
+                      ? "text-over"
+                      : state === "pending"
+                        ? "text-ink3"
+                        : "text-ink2",
                 )}
               >
-                {step.detail(tenant)}
+                {state === "failed" && tenant.failure
+                  ? tenant.failure.message
+                  : step.detail(tenant)}
               </span>
             </div>
           </div>

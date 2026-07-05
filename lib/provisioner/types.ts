@@ -5,6 +5,8 @@
 export interface Provisioner {
   /** Begin provisioning an existing tenant (kicks off the async progression). */
   provision(tenantId: string): void;
+  /** Retry a failed tenant, optionally in a new region. */
+  retry(tenantId: string, regionCode?: string): void;
   /** Release the tenant's resources; billing stops. */
   teardown(tenantId: string): void;
 }

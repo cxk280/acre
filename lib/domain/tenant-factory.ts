@@ -48,5 +48,6 @@ export function createTenant(
     billingStoppedAt: null,
     currentStep: null,
     completedSteps: [],
+    failure: null,
   };
 }

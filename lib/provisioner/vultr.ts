@@ -22,6 +22,12 @@ export class VultrProvisioner implements Provisioner {
     );
   }
 
+  retry(): void {
+    throw new Error(
+      "VultrProvisioner is a stub: real Vultr API retry is not wired yet.",
+    );
+  }
+
   teardown(): void {
     throw new Error(
       "VultrProvisioner is a stub: real Vultr API teardown is not wired yet.",

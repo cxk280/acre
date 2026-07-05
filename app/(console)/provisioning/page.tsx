@@ -8,7 +8,7 @@ import { Icon } from "@/components/icons";
 import { Field, Segmented, Select, TextInput } from "@/components/form";
 import { IsolationBadgeCompact } from "@/components/IsolationBadge";
 import { Stepper } from "@/components/Stepper";
-import { createTenant } from "@/lib/api/client";
+import { createTenant, retryTenant } from "@/lib/api/client";
 import { MODELS, REGIONS, SLICE_OPTIONS, sliceOption } from "@/lib/domain/catalog";
 import { liveSessionCost } from "@/lib/domain/rates";
 import type { SliceSize } from "@/lib/domain/types";
@@ -45,6 +45,19 @@ export default function ProvisioningPage() {
       setError((err as Error).message);
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  const [retrying, setRetrying] = useState(false);
+  async function handleRetry() {
+    if (!createdId) return;
+    setRetrying(true);
+    try {
+      await retryTenant(createdId, regionCode);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setRetrying(false);
     }
   }
 
@@ -88,6 +101,7 @@ export default function ProvisioningPage() {
               {REGIONS.map((r) => (
                 <option key={r.code} value={r.code}>
                   {r.label}
+                  {r.atCapacity ? " (at capacity)" : ""}
                 </option>
               ))}
             </Select>
@@ -148,7 +162,12 @@ export default function ProvisioningPage() {
           {!createdId || !tenant ? (
             <ReadyState />
           ) : (
-            <Theater tenant={tenant} now={now} />
+            <Theater
+              tenant={tenant}
+              now={now}
+              onRetry={handleRetry}
+              retrying={retrying}
+            />
           )}
         </div>
       </div>
@@ -173,11 +192,16 @@ function ReadyState() {
 function Theater({
   tenant,
   now,
+  onRetry,
+  retrying,
 }: {
   tenant: import("@/lib/domain/types").Tenant;
   now: number;
+  onRetry: () => void;
+  retrying: boolean;
 }) {
   const live = tenant.status === "running";
+  const failed = tenant.status === "failed";
   const confirmed = [
     tenant.isolation.gpuSlice.confirmed,
     tenant.isolation.vpc.confirmed,
@@ -188,21 +212,56 @@ function Theater({
   return (
     <>
       <div className="flex items-center gap-3">
-        <h2 className="text-base font-semibold text-ink">
-          {live ? "Endpoint live" : `Provisioning ${tenant.name}…`}
+        <h2
+          className={cn(
+            "text-base font-semibold",
+            failed ? "text-over" : "text-ink",
+          )}
+        >
+          {failed
+            ? "Provisioning failed"
+            : live
+              ? "Endpoint live"
+              : `Provisioning ${tenant.name}…`}
         </h2>
-        <span className="ml-auto flex items-center gap-1.5 rounded-full bg-track px-3 py-1.5">
-          <span className="size-[7px] rounded-full bg-under" />
-          <span className="font-mono text-xs font-medium text-ink">
-            {formatRate(tenant.ratePerHour)}
+        {!failed && (
+          <span className="ml-auto flex items-center gap-1.5 rounded-full bg-track px-3 py-1.5">
+            <span className="size-[7px] rounded-full bg-under" />
+            <span className="font-mono text-xs font-medium text-ink">
+              {formatRate(tenant.ratePerHour)}
+            </span>
+            <span className="text-xs text-ink3">
+              · {session > 0 ? `${formatUsd(session)} so far` : "ticking"}
+            </span>
           </span>
-          <span className="text-xs text-ink3">
-            · {session > 0 ? `${formatUsd(session)} so far` : "ticking"}
-          </span>
-        </span>
+        )}
       </div>
 
       <Stepper tenant={tenant} />
+
+      {failed && (
+        <div className="flex flex-col gap-3 rounded-md bg-danger-bg p-4">
+          <div className="flex items-start gap-2.5">
+            <Icon
+              name="alert-triangle"
+              size={18}
+              className="mt-0.5 shrink-0 text-over"
+            />
+            <span className="text-[13px] text-over">
+              {tenant.failure?.message} No resources were charged — retry, or pick
+              a different region above and retry.
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={onRetry}
+            disabled={retrying}
+            className={cn(buttonClass("primary"), "self-start px-3 py-2")}
+          >
+            {retrying ? "Retrying…" : "Retry provisioning"}
+          </button>
+        </div>
+      )}
 
       {live && tenant.endpointUrl && (
         <div className="flex flex-col gap-3 rounded-md bg-iso-bg p-4">
@@ -219,22 +278,24 @@ function Theater({
             >
               View tenant
             </Link>
-            <span
-              className={cn(buttonClass("ghost"), "px-3 py-2 opacity-50")}
-              aria-disabled="true"
+            <Link
+              href="/playground"
+              className={cn(buttonClass("ghost"), "px-3 py-2")}
             >
-              Open Playground (soon)
-            </span>
+              Open Playground
+            </Link>
           </div>
         </div>
       )}
 
-      <div className="flex flex-col gap-2.5 border-t border-line-subtle pt-4">
-        <span className="text-xs font-medium text-iso-strong">
-          Isolation confirmed as each resource is created — {confirmed} / 3
-        </span>
-        <IsolationBadgeCompact isolation={tenant.isolation} />
-      </div>
+      {!failed && (
+        <div className="flex flex-col gap-2.5 border-t border-line-subtle pt-4">
+          <span className="text-xs font-medium text-iso-strong">
+            Isolation confirmed as each resource is created — {confirmed} / 3
+          </span>
+          <IsolationBadgeCompact isolation={tenant.isolation} />
+        </div>
+      )}
     </>
   );
 }
