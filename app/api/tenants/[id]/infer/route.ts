@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { inference } from "@/lib/inference";
+import { inferenceForTenant } from "@/lib/inference";
 import { tenantRepository } from "@/lib/store/tenant-repository";
 
 export const runtime = "nodejs";
@@ -35,10 +35,24 @@ export async function POST(
     return NextResponse.json({ error: "A prompt is required." }, { status: 400 });
   }
 
-  const result = await inference.infer({
-    prompt,
-    model: tenant.model,
-    region: tenant.region,
-  });
-  return NextResponse.json({ result });
+  // Route to the tenant's OWN dedicated endpoint when it has one; otherwise the
+  // shared backend. A dedicated endpoint failure surfaces as a 502 rather than
+  // silently returning canned text.
+  try {
+    const result = await inferenceForTenant(tenant).infer({
+      prompt,
+      model: tenant.model,
+      region: tenant.region,
+      endpointUrl: tenant.endpointUrl ?? undefined,
+    });
+    return NextResponse.json({ result });
+  } catch (err) {
+    // Log the detail (which can include the instance's internal IP) server-side;
+    // return a generic message so infra details don't leak to the client.
+    console.error(`[acre] inference failed for ${tenant.id}:`, err);
+    return NextResponse.json(
+      { error: "The tenant's dedicated endpoint did not respond." },
+      { status: 502 },
+    );
+  }
 }
