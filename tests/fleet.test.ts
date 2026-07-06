@@ -37,8 +37,8 @@ describe("computeFleetSummary", () => {
     expect(s.activeTenants).toBe(4); // all but the stopped one
     expect(s.runningTenants).toBe(2);
     expect(s.idleTenants).toBe(1);
-    // three billing tenants at $0.03 each
-    expect(s.fleetRatePerHour).toBeCloseTo(0.09, 6);
+    // three billing tenants at the real ~$0.06/hr each
+    expect(s.fleetRatePerHour).toBeCloseTo(0.18, 6);
     expect(s.fleetRatePerHour).toBeLessThan(0.5 * 4);
     expect(s.regions.sort()).toEqual(["Amsterdam", "New Jersey"]);
     expect(s.sliceCount).toBe(4);
