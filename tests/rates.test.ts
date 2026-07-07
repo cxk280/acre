@@ -49,7 +49,8 @@ describe("liveSessionCost", () => {
 
   it("accrues while billing is active", () => {
     const billing: Tenant = { ...base, billingStartedAt: 0 };
-    expect(liveSessionCost(billing, 60 * 60 * 1000)).toBeCloseTo(0.03, 6);
+    // a16-1_8 = the real ~$0.06/hr 2 GB A16 vGPU slice.
+    expect(liveSessionCost(billing, 60 * 60 * 1000)).toBeCloseTo(0.06, 6);
   });
 
   it("freezes at the teardown moment once billing has stopped", () => {
@@ -59,6 +60,6 @@ describe("liveSessionCost", () => {
       billingStoppedAt: 60 * 60 * 1000,
     };
     // Even an hour later, cost is frozen at the one-hour mark.
-    expect(liveSessionCost(stopped, 5 * 60 * 60 * 1000)).toBeCloseTo(0.03, 6);
+    expect(liveSessionCost(stopped, 5 * 60 * 60 * 1000)).toBeCloseTo(0.06, 6);
   });
 });

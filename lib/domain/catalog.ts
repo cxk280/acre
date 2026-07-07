@@ -107,40 +107,72 @@ export interface SliceOption {
   accelerator: string;
   /** Fraction glyph for display, e.g. "⅛". */
   fraction: string;
-  /** MIG/vGPU profile identifier used in the isolation badge. */
+  /** vGPU profile label used in the isolation badge. */
   migProfile: string;
   /** GPU memory of the slice. */
   memory: string;
+  /**
+   * The real Vultr fractional-GPU plan id this slice provisions (verified via
+   * GET /v2/plans). The VultrProvisioner boots this exact plan, so the cost meter
+   * reflects what is actually billed — not an illustrative number.
+   */
+  plan: string;
   ratePerHour: number;
 }
 
+// A Vultr A16 is a 16 GB card; these are its real, API-provisionable vGPU slices
+// (vram-sliced, not MIG). ⅛/¼/½ = 2/4/8 GB of the 16 GB card. Hourly ≈ monthly÷730
+// ($43/$86/$172 → ~$0.06/$0.12/$0.24), all comfortably under the $0.50 ceiling.
 /** Cheapest first — the UI preselects SLICE_OPTIONS[0]. */
 export const SLICE_OPTIONS: SliceOption[] = [
   {
     size: "a16-1_8",
     accelerator: "A16",
     fraction: "⅛",
-    migProfile: "mig-1g.5gb",
-    memory: "5 GB",
-    ratePerHour: 0.03,
+    migProfile: "A16 · 2 GB vGPU",
+    memory: "2 GB",
+    plan: "vcg-a16-2c-8g-2vram",
+    ratePerHour: 0.06,
   },
   {
     size: "a16-1_4",
     accelerator: "A16",
     fraction: "¼",
-    migProfile: "mig-2g.10gb",
-    memory: "10 GB",
-    ratePerHour: 0.06,
+    migProfile: "A16 · 4 GB vGPU",
+    memory: "4 GB",
+    plan: "vcg-a16-2c-16g-4vram",
+    ratePerHour: 0.12,
   },
   {
     size: "a16-1_2",
     accelerator: "A16",
     fraction: "½",
-    migProfile: "mig-3g.20gb",
-    memory: "20 GB",
-    ratePerHour: 0.12,
+    migProfile: "A16 · 8 GB vGPU",
+    memory: "8 GB",
+    plan: "vcg-a16-3c-32g-8vram",
+    ratePerHour: 0.24,
   },
 ];
+
+// The regions that actually carry the small A16 slices (GET /v2/plans →
+// vcg-a16-2c-8g-2vram.locations). The real provisioner validates against this so a
+// tenant in an unsupported region fails cleanly instead of erroring mid-provision.
+export const GPU_SLICE_REGIONS: readonly string[] = [
+  "ewr",
+  "ord",
+  "atl",
+  "lhr",
+  "fra",
+  "sjc",
+  "nrt",
+  "sgp",
+  "blr",
+];
+
+/** Is the small A16 fractional slice available in this region? */
+export function regionHasGpuSlice(code: string): boolean {
+  return GPU_SLICE_REGIONS.includes(code);
+}
 
 export function sliceOption(size: SliceSize): SliceOption {
   const found = SLICE_OPTIONS.find((s) => s.size === size);

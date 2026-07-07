@@ -31,3 +31,7 @@ next-env.d.ts
 # Deploy artifacts
 .deploy/
 .deploy.tgz
+docs/EDGE_CASES.md
+
+docs/USERS.md
+docs/USER_PERSONAS_FINDING.md

@@ -38,8 +38,8 @@ describe("TeardownDialog", () => {
     expect(
       screen.getByText("Tear down Riverside Clinic?"),
     ).toBeInTheDocument();
-    // $0.03/hr * 24h = $0.72/day
-    expect(screen.getByText(/\$0\.72\/day saved/)).toBeInTheDocument();
+    // $0.06/hr * 24h = $1.44/day
+    expect(screen.getByText(/\$1\.44\/day saved/)).toBeInTheDocument();
   });
 
   it("fires the right callbacks for confirm and cancel", () => {

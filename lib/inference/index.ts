@@ -39,4 +39,33 @@ export const inference: Inference =
   globalInference.__acreInference ??
   (globalInference.__acreInference = buildInference());
 
+/**
+ * A tenant provisioned by VultrProvisioner has its OWN endpoint (Ollama on its
+ * instance, http://<ip>:11434/v1) — genuinely dedicated, not the shared backend.
+ * The mock provisioner's endpoint (https://<id>.acre.io/v1) is not real, so it
+ * falls through to the shared `inference`.
+ */
+export function isDedicatedEndpoint(url: string | null): boolean {
+  return !!url && url.startsWith("http://") && url.includes(":11434");
+}
+
+/**
+ * Pick the inference backend for a tenant: its own dedicated instance when it has
+ * a real endpoint, otherwise the shared process-wide backend. The dedicated path
+ * forces the model that was actually pulled onto the instance and does NOT fall
+ * back to the mock, so a broken private endpoint surfaces loudly.
+ */
+export function inferenceForTenant(tenant: {
+  endpointUrl: string | null;
+}): Inference {
+  if (
+    process.env.ACRE_PROVISIONER === "vultr" &&
+    isDedicatedEndpoint(tenant.endpointUrl)
+  ) {
+    const model = process.env.ACRE_VULTR_OLLAMA_MODEL ?? "llama3.2:1b";
+    return new OllamaInference({ model, fallbackToMock: false });
+  }
+  return inference;
+}
+
 export type { Inference, InferenceInput } from "./types";

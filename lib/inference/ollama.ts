@@ -25,13 +25,40 @@ function ollamaModel(tenantModel: string): string {
   return "llama3.2:3b";
 }
 
+export interface OllamaInferenceOptions {
+  /** Base URL override (else input.endpointUrl, else OLLAMA_URL). */
+  baseUrl?: string;
+  /** Force a specific Ollama tag (used for a dedicated instance's pulled model). */
+  model?: string;
+  /**
+   * Fall back to the mock on error. True for shared local dev (never break the
+   * demo); FALSE for a tenant's dedicated endpoint, where a failure must surface
+   * loudly rather than quietly return canned text from a "real" endpoint.
+   */
+  fallbackToMock?: boolean;
+}
+
+/** Strip a trailing OpenAI-compat `/v1` so we can call Ollama's native `/api/*`. */
+function ollamaBase(url: string): string {
+  return url.replace(/\/v1\/?$/, "").replace(/\/$/, "");
+}
+
 export class OllamaInference implements Inference {
   private readonly fallback = new MockInference();
+  private readonly opts: OllamaInferenceOptions;
+
+  constructor(opts: OllamaInferenceOptions = {}) {
+    this.opts = { fallbackToMock: true, ...opts };
+  }
 
   async infer(input: InferenceInput): Promise<InferenceResult> {
     const started = Date.now();
+    const base = ollamaBase(
+      input.endpointUrl ?? this.opts.baseUrl ?? OLLAMA_URL,
+    );
+    const modelTag = this.opts.model ?? ollamaModel(input.model);
     try {
-      const res = await fetch(`${OLLAMA_URL}/api/chat`, {
+      const res = await fetch(`${base}/api/chat`, {
         method: "POST",
         headers: { "content-type": "application/json" },
         // Cap the wait so a slow/stuck model can't hang the Playground — on
@@ -40,7 +67,7 @@ export class OllamaInference implements Inference {
           Number(process.env.OLLAMA_TIMEOUT_MS ?? 45000),
         ),
         body: JSON.stringify({
-          model: ollamaModel(input.model),
+          model: modelTag,
           stream: false,
           // Keep the model resident so only the FIRST query pays the cold-load
           // cost — the rest of a demo session stays snappy.
@@ -68,9 +95,14 @@ export class OllamaInference implements Inference {
         latencyMs: Date.now() - started,
         model: input.model,
       };
-    } catch {
-      // Ollama not running / model not pulled → don't break the demo.
-      return this.fallback.infer(input);
+    } catch (err) {
+      // Shared local dev: fall back so the demo never breaks. A dedicated
+      // per-tenant endpoint sets fallbackToMock=false, so a real failure
+      // surfaces instead of masquerading as a working "private" endpoint.
+      if (this.opts.fallbackToMock) return this.fallback.infer(input);
+      throw err instanceof Error
+        ? err
+        : new Error("Dedicated endpoint inference failed.");
     }
   }
 }

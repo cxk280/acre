@@ -10,7 +10,12 @@ export const dynamic = "force-dynamic";
 // Note: SSE needs a host/proxy that doesn't buffer `text/event-stream`. The rest
 // of the app still uses plain polling, so this is an enhancement, not a hard dep.
 const POLL_MS = 400;
-const MAX_LIFETIME_MS = 5 * 60 * 1000;
+// Real (VultrProvisioner) provisioning pulls a model onto a fresh GPU and takes
+// minutes, not the mock's ~60s — so the stream must outlive it. Configurable, with
+// a headroom default over the provisioner's endpoint timeout (default 15 min).
+const MAX_LIFETIME_MS = Number(
+  process.env.ACRE_SSE_LIFETIME_MS ?? 20 * 60 * 1000,
+);
 
 export async function GET(
   request: Request,

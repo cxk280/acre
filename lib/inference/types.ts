@@ -9,6 +9,12 @@ export interface InferenceInput {
   model: string;
   region: string;
   history?: ChatMessage[];
+  /**
+   * The tenant's own dedicated endpoint, when it has one (a Vultr-provisioned
+   * instance running Ollama). Adapters that talk to a per-tenant endpoint use
+   * this; shared backends ignore it.
+   */
+  endpointUrl?: string;
 }
 
 export interface Inference {
