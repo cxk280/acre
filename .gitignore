@@ -32,3 +32,6 @@ next-env.d.ts
 .deploy/
 .deploy.tgz
 docs/EDGE_CASES.md
+
+docs/USERS.md
+docs/USER_PERSONAS_FINDING.md

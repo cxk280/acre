@@ -42,6 +42,16 @@ ENVFILE="$(mktemp)"
   echo "ACRE_INFERENCE=${ACRE_INFERENCE:-vultr}"
   echo "VULTR_INFERENCE_API_KEY=${VULTR_INFERENCE_API_KEY:-}"
   echo "VULTR_INFERENCE_MODEL=${VULTR_INFERENCE_MODEL:-deepseek-ai/DeepSeek-V4-Flash}"
+  # Real provisioner + firewall. The root API key only lands on the server when
+  # real provisioning is actually enabled — mock mode never ships the key.
+  echo "ACRE_PROVISIONER=${ACRE_PROVISIONER:-}"
+  if [ "${ACRE_PROVISIONER:-}" = "vultr" ]; then
+    echo "VULTR_API_KEY=${VULTR_API_KEY:-}"
+    echo "ACRE_VULTR_FIREWALL_GROUP=${ACRE_VULTR_FIREWALL_GROUP:-}"
+  fi
+  # Basic Auth gate for the public demo (empty = gate disabled).
+  echo "ACRE_BASIC_AUTH_USER=${ACRE_BASIC_AUTH_USER:-}"
+  echo "ACRE_BASIC_AUTH_PASSWORD=${ACRE_BASIC_AUTH_PASSWORD:-}"
 } > "$ENVFILE"
 
 echo "==> Uploading to ${TARGET}…"
